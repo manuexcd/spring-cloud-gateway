@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: gateway
+server:
+  port: 8080
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8082/eureka
+    region: default
+    registryFetchIntervalSeconds: 5
+    register-with-eureka: true
+    fetch-registry: true
+zuul:
+  routes:
+    discovery:
+      path: /discovery/**
+      serviceId: discovery
+      url: http://localhost:8082/eureka
+      sensitive-headers: Set-Cookie,Authorization
+    car:
+      path: /car/**
+      serviceId: car
+      url: http://localhost:8085
+      sensitive-headers: Set-Cookie,Authorization
+    carfilter:
+      path: /carfilter/**
+      serviceId: carfilter
+      url: http://localhost:8086
+      sensitive-headers: Set-Cookie,Authorization
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 600000
+---
+spring:
+  profiles: docker
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery:8082/eureka
+zuul:
+  routes:
+    discovery:
+      url: http://discovery:8082/eureka
+    car:
+      url: http://car:8085
+    carfilter:
+      url: http://carfilter:8086
+---
+spring:
+  profiles: kubernetes
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8082/eureka
+zuul:
+  routes:
+    discovery:
+      url: http://eureka-server:8082/eureka
+    car:
+      url: http://car:8085
+    carfilter:
+      url: http://carfilter:8086
